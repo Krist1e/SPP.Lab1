@@ -1,17 +1,16 @@
-﻿using System.Collections.Immutable;
-using System.Reflection;
+﻿using System.Runtime.Serialization;
+using System.Text.Json.Serialization;
 
-namespace TracerLib;
+namespace TracerLib.Model;
 
+[DataContract]
 public class ThreadTraceResult(int threadId)
 {
-    private  int _threadId = threadId;
-    private float _totalTimeInMilliseconds;
-    private List<MethodTraceResult> _methods = new();
-    private Stack<MethodTraceResult> _callStack = new();
-
-    public int ThreadId => _threadId;
-    public float TotalTimeInMilliseconds => _totalTimeInMilliseconds;
+    private TimeSpan _totalTimeInMilliseconds;
+    private readonly List<MethodTraceResult> _methods = new();
+    private readonly Stack<MethodTraceResult> _callStack = new();
+    public int ThreadId => threadId;
+    public TimeSpan TotalTimeInMilliseconds => _totalTimeInMilliseconds;
     public List<MethodTraceResult> Methods => _methods;
 
     public void StartThreadTrace(MethodTraceResult method)
@@ -34,7 +33,7 @@ public class ThreadTraceResult(int threadId)
         method.StopMethodTrace();
         if (_callStack.Count == 1)
         {
-            _totalTimeInMilliseconds = method.TimeInMilliseconds;
+            _totalTimeInMilliseconds += method.TimeInMilliseconds;
         }
         _callStack.Pop();
     }

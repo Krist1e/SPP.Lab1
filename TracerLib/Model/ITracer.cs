@@ -1,4 +1,4 @@
-﻿namespace TracerLib;
+﻿namespace TracerLib.Model;
 
 public interface ITracer<out T>
 {

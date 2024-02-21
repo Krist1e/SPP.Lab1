@@ -1,17 +1,12 @@
-﻿using System.Collections.Immutable;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Reflection;
 
-namespace TracerLib;
+namespace TracerLib.Model;
 
 public class Tracer : ITracer<TraceResult>
 {
-    private TraceResult _traceResult;
+    private TraceResult _traceResult = new();
 
-    public Tracer()
-    {
-        _traceResult = new TraceResult();
-    }
     public void StartTrace()
     {
         MethodBase method = new StackTrace().GetFrame(1)!.GetMethod()!;

@@ -1,9 +1,6 @@
-﻿using System.IO.Compression;
-using System.Runtime.Serialization.Json;
-using System.Text;
-using System.Text.Json;
-using System.Xml;
-using TracerLib;
+﻿using TracerLib.Model;
+using TracerLib.Serialization;
+using TracerLib.Writer;
 using Console = System.Console;
 
 Tracer tracer = new();
@@ -11,13 +8,8 @@ Person tom = new("Tom", 18, tracer);
 
 tom.Print();
 TraceResult result = tracer.GetTraceResult();
-var options = new JsonSerializerOptions()
-{
-    WriteIndented = true
-};
-Console.WriteLine(JsonSerializer.Serialize(result, options));
-/*string json = JsonSerializer.Serialize(result);
-Console.WriteLine(json);*/
+Writer writer = new Writer(new JsonSerializer());
+writer.Write(Console.OpenStandardOutput(), result);
 
 
 class Person
