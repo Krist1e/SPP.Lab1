@@ -5,7 +5,7 @@ namespace UnitTesting;
 
 public class TracerTest : IDisposable
 {
-    private const int THREAD_SLEEP_TIME = 40;
+    private const int THREAD_SLEEP_TIME = 100;
     private const int THREADS_COUNT = 5;
 
     private readonly Tracer _tracer = new();

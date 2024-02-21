@@ -1,70 +1,75 @@
 ﻿using TracerLib.Model;
 using TracerLib.Serialization;
 using TracerLib.Writer;
-using Console = System.Console;
 
-Tracer tracer = new();
-Person tom = new("Tom", 18, tracer);
+namespace Lab1;
 
-tom.Print();
-TraceResult result = tracer.GetTraceResult();
-Writer writer = new Writer(new JsonSerializer());
-writer.Write(Console.OpenStandardOutput(), result);
-
-
-class Person
+internal static class Program
 {
-    private string _name;
-    private int _age;
-    private Tracer _tracer;
-    private Building _building;
-    
-    public string Name => _name;
-    public int Age => _age;
-    
-    public Person(string name, int age, Tracer tracer)
+    static void Main(string[] args)
     {
-        _tracer = tracer;
-        _name = name;
-        _age = age;
-        _building = new Building(5, tracer);
-    }
-
-    public void Print()
-    {
-        _tracer.StartTrace();
-        Console.WriteLine("Name: {0} age: {1}", _name, _age);
-        Method2();
-        _building.PrintNumber();
-        _tracer.StopTrace();
-    }
-
-    public void Method2()
-    {
-        _tracer.StartTrace();
-        Console.WriteLine(2);
-        _tracer.StopTrace();
+        Console.WriteLine(Thread.CurrentThread.ManagedThreadId);
+        Tracer tracer = new();
+        Person tom = new("Tom", 18, tracer);
+        Person bob = new("Bob", 22, tracer);
+        Building building = new(5, tracer);
+        
+        List<Thread> threads =
+        [
+            new Thread(tom.Print),
+            new Thread(bob.Print),
+            new Thread(building.PrintNumber),
+            new Thread(tom.PrintName)
+        ];
+        threads.ForEach(thread => thread.Start());
+        threads.ForEach(thread => thread.Join());
+        
+        TraceResult traceResult = tracer.GetTraceResult();
+        ISerializer jsonSerializer = new JsonSerializer();
+        IWriter jsonWriter = new Writer(jsonSerializer);
+        jsonWriter.Write(Console.OpenStandardOutput(), traceResult);
+        jsonWriter.Write(new FileStream("traceResult.json", FileMode.Create), traceResult);
+        
+        ISerializer xmlSerializer = new XmlSerializer();
+        IWriter xmlWriter = new Writer(xmlSerializer);
+        xmlWriter.Write(Console.OpenStandardOutput(), traceResult);
+        xmlWriter.Write(new FileStream("traceResult.xml", FileMode.Create), traceResult);
     }
 }
 
-public class Building
-{
-    private int _number;
-    public int Number => _number;
-    private Tracer _tracer;
 
-    public Building(int number, Tracer tracer)
+
+class Person(string name, int age, Tracer tracer)
+{
+    private readonly Building _building = new(5, tracer);
+    
+    public string Name => name;
+    public int Age => age;
+
+    public void Print()
     {
-        _number = number;
-        _tracer = tracer;
+        tracer.StartTrace();
+        Console.WriteLine("Name: {0} age: {1}", name, age);
+        PrintName();
+        _building.PrintNumber();
+        tracer.StopTrace();
     }
 
+    public void PrintName()
+    {
+        tracer.StartTrace();
+        Console.WriteLine(name);
+        tracer.StopTrace();
+    }
+}
+
+public class Building(int number, Tracer tracer)
+{
     public void PrintNumber()
     {
-        _tracer.StartTrace();
-        Console.WriteLine("Building #" + _number);
-        _tracer.StopTrace();
+        tracer.StartTrace();
+        Console.WriteLine("Building #" + number);
+        tracer.StopTrace();
     }
-    
     
 }
